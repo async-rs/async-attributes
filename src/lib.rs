@@ -1,9 +1,49 @@
-//! Proc Macro attributes for the [Runtime](https://github.com/rustasync/runtime) crate. See the
-//! [Runtime](https://docs.rs/runtime) documentation for more details.
+//! Experimental language-level polyfills for Async Rust.
+//!
+//! # Examples
+//!
+//! ```
+//! use async_std::task;
+//!
+//! #[async_attributes::main]
+//! async fn main() {
+//!     println!("Hello, world!");
+//! }
+//! ```
+//!
+//! # About
+//!
+//! Async Rust is a work in progress. The language has enabled us to do some
+//! fantastic things, but not everything is figured out yet. This crate exists
+//! to polyfill language-level support for async idioms before they can be part
+//! of the language.
+//!
+//! A great example of this is `async fn main`, which we first introduced as
+//! part of the [`runtime`](https://docs.rs/runtime/0.3.0-alpha.7/runtime/) crate.
+//! Its premise is that if `async fn` is required for every `await` call, it
+//! makes sense to apply that even to `fn main`. Unfortunately this would
+//! require compiler support to enable, so we've provided an experimental
+//! polyfill for it in the mean time.
+//!
+//! # Why isn't this crate part of async-std?
+//!
+//! We want to make sure `async-std`'s surface area is stable, and only includes
+//! things that would make sense to be part of "an async version of std".
+//! Language level support is really important, but _not_ part of the standard
+//! library.
+//!
+//! This has some distinct benefits: in particular it allows us to
+//! version both crates at a different pace. And as features are added to the
+//! language (or we decide they weren't a great idea after all), we can
+//! incrementally shrink the surface area of this crate.
+//!
+//! The other big benefit is that it allows libraries to depend on `async-std`
+//! without needing to pull in the rather heavy `syn`, `quote`, and
+//! `proc-macro2` crates. This should help keep compilation times snappy for
+//! everyone.
 
 #![forbid(unsafe_code, future_incompatible, rust_2018_idioms)]
 #![deny(missing_debug_implementations, nonstandard_style)]
-#![feature(async_await)]
 #![recursion_limit = "512"]
 
 extern crate proc_macro;
@@ -17,28 +57,14 @@ use syn::spanned::Spanned;
 /// # Examples
 ///
 /// ```ignore
-/// #![feature(async_await)]
-///
-/// #[runtime::main]
+/// #[async_attributes::main]
 /// async fn main() -> std::io::Result<()> {
 ///     Ok(())
 /// }
 /// ```
 #[cfg(not(test))] // NOTE: exporting main breaks tests, we should file an issue.
 #[proc_macro_attribute]
-pub fn main(attr: TokenStream, item: TokenStream) -> TokenStream {
-    let rt = if attr.is_empty() {
-        if cfg!(feature = "native") {
-            syn::parse_str("runtime::native::Native").unwrap()
-        } else {
-            let tokens = quote_spanned! { proc_macro2::Span::call_site() =>
-                compile_error!("async runtime needs to be specified if no default runtime is set");
-            };
-            return TokenStream::from(tokens);
-        }
-    } else {
-        syn::parse_macro_input!(attr as syn::Expr)
-    };
+pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let input = syn::parse_macro_input!(item as syn::ItemFn);
 
     let ret = &input.decl.output;
@@ -48,17 +74,15 @@ pub fn main(attr: TokenStream, item: TokenStream) -> TokenStream {
     let attrs = &input.attrs;
 
     if name != "main" {
-        let tokens = quote_spanned! { name.span() =>
-          compile_error!("only the main function can be tagged with #[runtime::main]");
-        };
-        return TokenStream::from(tokens);
+        return TokenStream::from(quote_spanned! { name.span() =>
+            compile_error!("only the main function can be tagged with #[runtime::main]"),
+        });
     }
 
     if input.asyncness.is_none() {
-        let tokens = quote_spanned! { input.span() =>
-          compile_error!("the async keyword is missing from the function declaration");
-        };
-        return TokenStream::from(tokens);
+        return TokenStream::from(quote_spanned! { input.span() =>
+            compile_error!("the async keyword is missing from the function declaration"),
+        });
     }
 
     let result = quote! {
@@ -68,7 +92,7 @@ pub fn main(attr: TokenStream, item: TokenStream) -> TokenStream {
                 #body
             }
 
-            runtime::raw::enter(#rt, async {
+            async_std::task::block_on(async {
                 main().await
             })
         }
@@ -83,27 +107,14 @@ pub fn main(attr: TokenStream, item: TokenStream) -> TokenStream {
 /// # Examples
 ///
 /// ```ignore
-/// #![feature(async_await)]
-///
-/// #[runtime::test]
-/// async fn main() -> std::io::Result<()> {
+/// #[async_attributes::test]
+/// async fn my_test() -> std::io::Result<()> {
+///     assert_eq(2 * 2, 4);
 ///     Ok(())
 /// }
 /// ```
 #[proc_macro_attribute]
-pub fn test(attr: TokenStream, item: TokenStream) -> TokenStream {
-    let rt = if attr.is_empty() {
-        if cfg!(feature = "native") {
-            syn::parse_str("runtime::native::Native").unwrap()
-        } else {
-            let tokens = quote_spanned! { proc_macro2::Span::call_site() =>
-                compile_error!("async runtime needs to be specified if no default runtime is set");
-            };
-            return TokenStream::from(tokens);
-        }
-    } else {
-        syn::parse_macro_input!(attr as syn::Expr)
-    };
+pub fn test(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let input = syn::parse_macro_input!(item as syn::ItemFn);
 
     let ret = &input.decl.output;
@@ -112,18 +123,17 @@ pub fn test(attr: TokenStream, item: TokenStream) -> TokenStream {
     let attrs = &input.attrs;
 
     if input.asyncness.is_none() {
-        let tokens = quote_spanned! { input.span() =>
-          compile_error!("the async keyword is missing from the function declaration");
-        };
-        return TokenStream::from(tokens);
+        return TokenStream::from(quote_spanned! { input.span() =>
+            compile_error!("the async keyword is missing from the function declaration"),
+        });
     }
 
     let result = quote! {
-      #[test]
-      #(#attrs)*
-      fn #name() #ret {
-        runtime::raw::enter(#rt, async { #body })
-      }
+        #[test]
+        #(#attrs)*
+        fn #name() #ret {
+            async_std::task::block_on(async { #body })
+        }
     };
 
     result.into()
@@ -134,29 +144,21 @@ pub fn test(attr: TokenStream, item: TokenStream) -> TokenStream {
 /// # Examples
 ///
 /// ```ignore
-/// #![feature(async_await, test)]
+/// #![feature(test)]
 ///
 /// extern crate test;
 ///
-/// #[runtime::test]
+/// use async_std::task;
+///
+/// #[async_attributes::test]
 /// async fn spawn_and_await() {
-///   runtime::spawn(async {}).await;
+///     task::spawn(async {
+///         println!("hello world");
+///     }).await;
 /// }
 /// ```
 #[proc_macro_attribute]
-pub fn bench(attr: TokenStream, item: TokenStream) -> TokenStream {
-    let rt = if attr.is_empty() {
-        if cfg!(feature = "native") {
-            syn::parse_str("runtime::native::Native").unwrap()
-        } else {
-            let tokens = quote_spanned! { proc_macro2::Span::call_site() =>
-                compile_error!("async runtime needs to be specified if no default runtime is set");
-            };
-            return TokenStream::from(tokens);
-        }
-    } else {
-        syn::parse_macro_input!(attr as syn::Expr)
-    };
+pub fn bench(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let input = syn::parse_macro_input!(item as syn::ItemFn);
 
     let args = &input.decl.inputs;
@@ -165,27 +167,25 @@ pub fn bench(attr: TokenStream, item: TokenStream) -> TokenStream {
     let attrs = &input.attrs;
 
     if input.asyncness.is_none() {
-        let tokens = quote_spanned! { input.span() =>
-          compile_error!("the async keyword is missing from the function declaration");
-        };
-        return TokenStream::from(tokens);
+        return TokenStream::from(quote_spanned! { input.span() =>
+            compile_error!("the async keyword is missing from the function declaration"),
+        });
     }
 
     if !args.is_empty() {
-        let tokens = quote_spanned! { args.span() =>
-          compile_error!("async benchmarks don't take any arguments");
-        };
-        return TokenStream::from(tokens);
+        return TokenStream::from(quote_spanned! { args.span() =>
+            compile_error!("async benchmarks don't take any arguments"),
+        });
     }
 
     let result = quote! {
-      #[bench]
-      #(#attrs)*
-      fn #name(b: &mut test::Bencher) {
-        b.iter(|| {
-          let _ = runtime::raw::enter(#rt, async { #body });
-        });
-      }
+        #[bench]
+        #(#attrs)*
+        fn #name(b: &mut test::Bencher) {
+            b.iter(|| {
+                let _ = async_std::task::block_on(async { #body });
+            });
+        }
     };
 
     result.into()
