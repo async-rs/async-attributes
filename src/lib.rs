@@ -3,8 +3,6 @@
 //! # Examples
 //!
 //! ```
-//! use async_std::task;
-//!
 //! #[async_attributes::main]
 //! async fn main() {
 //!     println!("Hello, world!");
