@@ -4,5 +4,6 @@ use async_std::task;
 async fn main() {
     task::spawn(async {
         println!("Hello, world!");
-    }).await;
+    })
+    .await;
 }
