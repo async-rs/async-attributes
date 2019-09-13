@@ -1,6 +1,6 @@
 language: rust
 rust:
-  - stable
+  - nightly
 
 before_script: |
   rustup component add rustfmt-preview &&
