@@ -1,0 +1,28 @@
+[package]
+name = "async-attributes"
+description = "Procedural macros for async-std."
+version = "0.3.0-alpha.5"
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/async-rs/async-attributes"
+homepage = "https://github.com/async-rs/async-attributes"
+documentation = "https://docs.rs/async-attributes"
+authors = ["Yoshua Wuyts <yoshuawuyts@gmail.com>"]
+keywords = ["async", "await", "macro", "futures"]
+categories = ["asynchronous", "network-programming", "filesystem", "concurrency", "api-bindings"]
+edition = "2018"
+
+[lib]
+proc-macro = true
+
+[features]
+default = ["native"]
+native = []
+
+[dependencies]
+syn = { version = "0.15.33", features = ["full"] }
+proc-macro2 = { version = "0.4.29", features = ["nightly"] }
+quote = "0.6.12"
+
+[dev-dependencies]
+runtime-raw = { path = "../runtime-raw", version = "0.3.0-alpha.4" }
