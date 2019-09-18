@@ -159,6 +159,7 @@ pub fn test(_attr: TokenStream, item: TokenStream) -> TokenStream {
 pub fn bench(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let input = syn::parse_macro_input!(item as syn::ItemFn);
 
+    let ret = &input.sig.output;
     let args = &input.sig.inputs;
     let name = &input.sig.ident;
     let body = &input.block;
@@ -179,10 +180,12 @@ pub fn bench(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let result = quote! {
         #[bench]
         #(#attrs)*
-        fn #name(b: &mut test::Bencher) {
-            b.iter(|| {
-                let _ = async_std::task::block_on(async { #body });
-            });
+        fn #name(b: &mut test::Bencher) #ret {
+            task::block_on(task::spawn(async {
+                b.iter(|| {
+                    #body
+                })
+            }))
         }
     };
 
