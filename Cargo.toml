@@ -1,7 +1,7 @@
 [package]
 name = "async-attributes"
 description = "Experimental language-level polyfills for Async Rust."
-version = "0.3.0-alpha.5"
+version = "1.0.0"
 license = "MIT OR Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/async-rs/async-attributes"
