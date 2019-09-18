@@ -1,4 +1,4 @@
-# async-macros
+# async-attributes
 [![crates.io version][1]][2] [![build status][3]][4]
 [![downloads][5]][6] [![docs.rs docs][7]][8]
 
@@ -51,7 +51,7 @@ everyone.
 ## Installation
 
 ```sh
-$ cargo add async-macros
+$ cargo add async-attributes
 ```
 
 ## Safety
@@ -76,16 +76,16 @@ look at some of these issues:
 ## License
 [MIT](./LICENSE-MIT) OR [Apache-2.0](./LICENSE-APACHE)
 
-[1]: https://img.shields.io/crates/v/async-macros.svg?style=flat-square
-[2]: https://crates.io/crates/async-macros
-[3]: https://img.shields.io/travis/async-rs/async-macros/master.svg?style=flat-square
-[4]: https://travis-ci.org/async-rs/async-macros
-[5]: https://img.shields.io/crates/d/async-macros.svg?style=flat-square
-[6]: https://crates.io/crates/async-macros
+[1]: https://img.shields.io/crates/v/async-attributes.svg?style=flat-square
+[2]: https://crates.io/crates/async-attributes
+[3]: https://travis-ci.com/async-rs/async-attributes.svg?branch=master
+[4]: https://travis-ci.com/async-rs/async-attributes
+[5]: https://img.shields.io/crates/d/async-attributes.svg?style=flat-square
+[6]: https://crates.io/crates/async-attributes
 [7]: https://img.shields.io/badge/docs-latest-blue.svg?style=flat-square
-[8]: https://docs.rs/async-macros
+[8]: https://docs.rs/async-attributes
 
-[releases]: https://github.com/async-rs/async-macros/releases
-[contributing]: https://github.com/async-rs/async-macros/blob/master.github/CONTRIBUTING.md
-[good-first-issue]: https://github.com/async-rs/async-macros/labels/good%20first%20issue
-[help-wanted]: https://github.com/async-rs/async-macros/labels/help%20wanted
+[releases]: https://github.com/async-rs/async-attributes/releases
+[contributing]: https://github.com/async-rs/async-attributes/blob/master.github/CONTRIBUTING.md
+[good-first-issue]: https://github.com/async-rs/async-attributes/labels/good%20first%20issue
+[help-wanted]: https://github.com/async-rs/async-attributes/labels/help%20wanted
