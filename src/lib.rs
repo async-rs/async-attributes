@@ -143,16 +143,13 @@ pub fn test(_attr: TokenStream, item: TokenStream) -> TokenStream {
 ///
 /// ```ignore
 /// #![feature(test)]
-///
 /// extern crate test;
 ///
-/// use async_std::task;
-///
-/// #[async_attributes::test]
-/// async fn spawn_and_await() {
-///     task::spawn(async {
+/// #[async_attributes::bench]
+/// async fn bench_1(b: &mut test::Bencher) {
+///     b.iter(|| {
 ///         println!("hello world");
-///     }).await;
+///     })
 /// }
 /// ```
 #[proc_macro_attribute]
@@ -182,9 +179,7 @@ pub fn bench(_attr: TokenStream, item: TokenStream) -> TokenStream {
         #(#attrs)*
         fn #name(b: &mut test::Bencher) #ret {
             task::block_on(task::spawn(async {
-                b.iter(|| {
-                    #body
-                })
+                #body
             }))
         }
     };
