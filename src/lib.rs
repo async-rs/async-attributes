@@ -50,6 +50,10 @@ use proc_macro::TokenStream;
 use quote::{quote, quote_spanned};
 use syn::spanned::Spanned;
 
+/// <span
+///   class="module-item stab portability"
+///   style="display: inline; border-radius: 3px; padding: 2px; font-size: 80%; line-height: 1.2;"
+/// ><code>bin</code></span>
 /// Defines the async main function.
 ///
 /// # Examples
@@ -100,6 +104,10 @@ pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
     result.into()
 }
 
+/// <span
+///   class="module-item stab portability"
+///   style="display: inline; border-radius: 3px; padding: 2px; font-size: 80%; line-height: 1.2;"
+/// ><code>bin</code></span>
 /// Creates an async unit test.
 ///
 /// # Examples
@@ -137,6 +145,10 @@ pub fn test(_attr: TokenStream, item: TokenStream) -> TokenStream {
     result.into()
 }
 
+/// <span
+///   class="module-item stab portability"
+///   style="display: inline; border-radius: 3px; padding: 2px; font-size: 80%; line-height: 1.2;"
+/// ><code>bin</code></span>
 /// Creates an async benchmark.
 ///
 /// # Examples
