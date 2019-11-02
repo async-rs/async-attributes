@@ -107,7 +107,7 @@ pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
 /// ```ignore
 /// #[async_attributes::test]
 /// async fn my_test() -> std::io::Result<()> {
-///     assert_eq(2 * 2, 4);
+///     assert_eq!(2 * 2, 4);
 ///     Ok(())
 /// }
 /// ```
