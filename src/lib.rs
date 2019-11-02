@@ -22,23 +22,6 @@
 //! makes sense to apply that even to `fn main`. Unfortunately this would
 //! require compiler support to enable, so we've provided an experimental
 //! polyfill for it in the mean time.
-//!
-//! # Why isn't this crate part of async-std?
-//!
-//! We want to make sure `async-std`'s surface area is stable, and only includes
-//! things that would make sense to be part of "an async version of std".
-//! Language level support is really important, but _not_ part of the standard
-//! library.
-//!
-//! This has some distinct benefits: in particular it allows us to
-//! version both crates at a different pace. And as features are added to the
-//! language (or we decide they weren't a great idea after all), we can
-//! incrementally shrink the surface area of this crate.
-//!
-//! The other big benefit is that it allows libraries to depend on `async-std`
-//! without needing to pull in the rather heavy `syn`, `quote`, and
-//! `proc-macro2` crates. This should help keep compilation times snappy for
-//! everyone.
 
 #![forbid(unsafe_code, future_incompatible, rust_2018_idioms)]
 #![deny(missing_debug_implementations, nonstandard_style)]
@@ -50,12 +33,16 @@ use proc_macro::TokenStream;
 use quote::{quote, quote_spanned};
 use syn::spanned::Spanned;
 
-/// Defines the async main function.
+/// <span
+///   class="module-item stab portability"
+///   style="display: inline; border-radius: 3px; padding: 2px; font-size: 80%; line-height: 1.2;"
+/// ><code>attributes</code></span>
+/// Enables an async main function.
 ///
 /// # Examples
 ///
 /// ```ignore
-/// #[async_attributes::main]
+/// #[async_std::main]
 /// async fn main() -> std::io::Result<()> {
 ///     Ok(())
 /// }
@@ -100,12 +87,16 @@ pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
     result.into()
 }
 
-/// Creates an async unit test.
+/// <span
+///   class="module-item stab portability"
+///   style="display: inline; border-radius: 3px; padding: 2px; font-size: 80%; line-height: 1.2;"
+/// ><code>attributes</code></span>
+/// Enables an async test function.
 ///
 /// # Examples
 ///
 /// ```ignore
-/// #[async_attributes::test]
+/// #[async_std::test]
 /// async fn my_test() -> std::io::Result<()> {
 ///     assert_eq!(2 * 2, 4);
 ///     Ok(())
@@ -137,7 +128,11 @@ pub fn test(_attr: TokenStream, item: TokenStream) -> TokenStream {
     result.into()
 }
 
-/// Creates an async benchmark.
+/// <span
+///   class="module-item stab portability"
+///   style="display: inline; border-radius: 3px; padding: 2px; font-size: 80%; line-height: 1.2;"
+/// ><code>attributes</code></span>
+/// Enables an async benchmark function.
 ///
 /// # Examples
 ///
@@ -145,7 +140,7 @@ pub fn test(_attr: TokenStream, item: TokenStream) -> TokenStream {
 /// #![feature(test)]
 /// extern crate test;
 ///
-/// #[async_attributes::bench]
+/// #[async_std::bench]
 /// async fn bench_1(b: &mut test::Bencher) {
 ///     b.iter(|| {
 ///         println!("hello world");
