@@ -4,7 +4,6 @@ rust:
 
 before_script: |
   rustup component add rustfmt-preview;
-  rustup component add clippy-preview;
   if ! rustup component add rustfmt; then
     target=`curl https://rust-lang.github.io/rustup-components-history/x86_64-unknown-linux-gnu/rustfmt`;
     echo "'rustfmt' is unavailable on the toolchain 'nightly', use the toolchain 'nightly-$target' instead";
@@ -14,7 +13,6 @@ before_script: |
   fi
 script: |
   cargo fmt -- --check &&
-  cargo clippy -- -D clippy &&
   cargo build --verbose &&
   cargo test  --verbose
 cache: cargo
