@@ -147,9 +147,7 @@ pub fn test(_attr: TokenStream, item: TokenStream) -> TokenStream {
 ///
 /// #[async_attributes::bench]
 /// async fn bench_1(b: &mut test::Bencher) {
-///     b.iter(|| {
-///         println!("hello world");
-///     })
+///     println!("hello world");
 /// }
 /// ```
 #[proc_macro_attribute]
@@ -178,9 +176,9 @@ pub fn bench(_attr: TokenStream, item: TokenStream) -> TokenStream {
         #[bench]
         #(#attrs)*
         fn #name(b: &mut test::Bencher) #ret {
-            task::block_on(task::spawn(async {
-                #body
-            }))
+            b.iter(|| {
+                let _ = async_std::task::block_on(async { #body });
+            });
         }
     };
 
