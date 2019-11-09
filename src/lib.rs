@@ -56,7 +56,7 @@ pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
     if name != "main" {
         return TokenStream::from(quote_spanned! { name.span() =>
-            compile_error!("only the main function can be tagged with #[runtime::main]"),
+            compile_error!("only the main function can be tagged with #[async_std::main]"),
         });
     }
 
