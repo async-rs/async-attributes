@@ -51,6 +51,7 @@ pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let name = &input.sig.ident;
     let body = &input.block;
     let attrs = &input.attrs;
+    let vis = &input.vis;
 
     if name != "main" {
         return TokenStream::from(quote_spanned! { name.span() =>
@@ -65,7 +66,7 @@ pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
     }
 
     let result = quote! {
-        fn main() #ret {
+        #vis fn main() #ret {
             #(#attrs)*
             async fn main(#inputs) #ret {
                 #body
@@ -100,6 +101,7 @@ pub fn test(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let name = &input.sig.ident;
     let body = &input.block;
     let attrs = &input.attrs;
+    let vis = &input.vis;
 
     if input.sig.asyncness.is_none() {
         return TokenStream::from(quote_spanned! { input.span() =>
@@ -110,7 +112,7 @@ pub fn test(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let result = quote! {
         #[test]
         #(#attrs)*
-        fn #name() #ret {
+        #vis fn #name() #ret {
             async_std::task::block_on(async { #body })
         }
     };
@@ -142,6 +144,7 @@ pub fn bench(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let name = &input.sig.ident;
     let body = &input.block;
     let attrs = &input.attrs;
+    let vis = &input.vis;
 
     if input.sig.asyncness.is_none() {
         return TokenStream::from(quote_spanned! { input.span() =>
@@ -158,7 +161,7 @@ pub fn bench(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let result = quote! {
         #[bench]
         #(#attrs)*
-        fn #name(b: &mut test::Bencher) #ret {
+        #vis fn #name(b: &mut test::Bencher) #ret {
             task::block_on(task::spawn(async {
                 #body
             }))
