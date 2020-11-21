@@ -72,6 +72,15 @@ pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
                 #body
             }
 
+            {
+                use core::future::Future;
+                use core::pin::Pin;
+                fn spawn(future: Pin<Box<dyn Future<Output = ()> + Send>>) {
+                    async_std::task::spawn(future);
+                }
+                async_spawner::register_spawner(spawn);
+            }
+
             async_std::task::block_on(async {
                 main().await
             })
