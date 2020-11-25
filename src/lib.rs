@@ -110,7 +110,7 @@ pub fn test(_attr: TokenStream, item: TokenStream) -> TokenStream {
     }
 
     let result = quote! {
-        #[test]
+        #[::core::prelude::v1::test]
         #(#attrs)*
         #vis fn #name() #ret {
             async_std::task::block_on(async { #body })
@@ -159,7 +159,7 @@ pub fn bench(_attr: TokenStream, item: TokenStream) -> TokenStream {
     }
 
     let result = quote! {
-        #[bench]
+        #[::core::prelude::v1::bench]
         #(#attrs)*
         #vis fn #name(b: &mut test::Bencher) #ret {
             task::block_on(task::spawn(async {
