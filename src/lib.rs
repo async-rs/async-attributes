@@ -44,7 +44,19 @@ use syn::spanned::Spanned;
 #[cfg(not(test))] // NOTE: exporting main breaks tests, we should file an issue.
 #[proc_macro_attribute]
 pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
-    let input = syn::parse_macro_input!(item as syn::ItemFn);
+    let input = match syn::parse::<syn::ItemFn>(item) {
+        Ok(input) => input,
+        Err(err) => {
+            let compile_err = err.to_compile_error();
+
+            return quote_spanned! {err.span()=>
+                #compile_err
+
+                fn main() {}
+            }
+            .into();
+        }
+    };
 
     let ret = &input.sig.output;
     let inputs = &input.sig.inputs;
